@@ -68,12 +68,14 @@ rspamd_docker_conf_path: "/etc/rspamd"
 rspamd_docker_static_runtime_data_path: "/var/lib/rspamd" #*.hs, *.hsmp, *.map files in here get recreated every start and do not have to be backed up
 rspamd_docker_image: registry.gitlab.com/famedly/containers/email/rspamd
 rspamd_docker_name: rspamd
-rspamd_docker_ports: []
+rspamd_docker_ports:
+  - "{{ rspamd_milter_listening_port }}:{{ rspamd_milter_listening_port }}"
 rspamd_docker_labels: {}
 dkim_selector_name: ratzupaltuff-test #hostname or month/year
 dkim_cert_filename: "{{ dkim_selector_name }}.key.pem"
 #rspamd_listening_address: "{{ email_network_prefix }}.1" #v4 for any v4 interface
-rspamd_listening_address: "172.3.0.5" #v4 for any v4 interface
+#rspamd_listening_address: "172.3.0.5" #v4 for any v4 interface
 rspamd_milter_listening_port: "11332"
+rspamd_listening_address: "0.0.0.0" #v4 for any v4 interface
 rspamd_docker_volumes:
   - "{{ rspamd_host_base_path }}/static_runtime_data/:{{ rspamd_docker_static_runtime_data_path }}:rw"

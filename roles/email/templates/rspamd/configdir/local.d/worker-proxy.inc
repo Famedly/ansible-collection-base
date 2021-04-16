@@ -14,5 +14,6 @@ spam_header = "X-Spam"; # Use the specific spam header
 reject_message = "Spam message rejected"; # Use custom rejection message
 
 bind_socket = "*:{{ rspamd_milter_listening_port }}";
+#bind_socket = "{{ email_local_send_network }}:{{ rspamd_milter_listening_port }}";
 #count = 1;
 #enabled = true; #default
