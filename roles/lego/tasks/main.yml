@@ -81,15 +81,11 @@
       copy:
         dest: "{{ lego_acme_account_path }}"
         content: "{{ lego_acme_account_merged | to_json }}"
-      notify:
-        - Run lego
 
     - name: Save acme private key
       copy:
         dest: "{{ lego_acme_key_path }}"
         content: "{{ lego_acme_privkey }}"
-      notify:
-        - Run lego
 
   when: lego_acme_account is defined and lego_acme_privkey is defined
 
@@ -102,7 +98,6 @@
     group: "root"
     mode: '0755'
   notify:
-    - Run lego
     - Reload systemd
 
 - name: Ensure systemd timer for lego is templated
