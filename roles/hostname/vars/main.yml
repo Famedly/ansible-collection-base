@@ -1,7 +1,6 @@
 ---
-
 hostname_localhost:
   ip: 127.0.0.1
-  fqdn: "localhost.localdomain"
-  alias: [ "localhost" ]
-hostname_hosts: "{{ [ hostname_localhost ] + hostname_extra_hosts }}"
+  fqdn: localhost.localdomain
+  alias: [localhost]
+hostname_hosts: "{{ [hostname_localhost] + hostname_extra_hosts }}"
