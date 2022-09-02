@@ -1,13 +1,12 @@
 ---
-
 - name: Set SSHFP records
   cloudflare_dns:
     type: SSHFP
     zone: "{{ item[0] }}"
     record: "{{ dns_host_name_short }}"
     value: "{{ item[1].fingerprint }}"
-    algorithm: "{{ dns_sshfp_algorithm[ item[1].algorithm ] }}"
-    hash_type: "{{ dns_sshfp_type[ item[1].hash_type ] }}"
+    algorithm: "{{ dns_sshfp_algorithm[item[1].algorithm] }}"
+    hash_type: "{{ dns_sshfp_type[item[1].hash_type] }}"
     api_token: "{{ dns_cloudflare_api_key }}"
   loop: "{{ dns_zones | product(dns_host_sshfp) | list }}"
   when: dns_management_method == "cloudflare" and dns_host_sshfp is defined

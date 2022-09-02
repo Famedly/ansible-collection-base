@@ -1,15 +1,13 @@
 ---
-
 dns_sshfp_algorithm:
-  "RSA": 1
-  "DSA": 2
-  "ECDSA": 3
-  "ED25519": 4
+  RSA: 1
+  DSA: 2
+  ECDSA: 3
+  ED25519: 4
 
 dns_sshfp_type:
-  "SHA-1": 1
-  "SHA-256": 2
-  "SHA-2": 2
+  SHA-1: 1
+  SHA-256: 2
+  SHA-2: 2
 
-dns_all_hostnames: "{{ [ { 'name': dns_host_name_short } ] + dns_host_names }}"
-
+dns_all_hostnames: "{{ [{'name': dns_host_name_short}] + dns_host_names }}"

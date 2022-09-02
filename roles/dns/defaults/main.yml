@@ -1,34 +1,33 @@
 ---
+dns_management_method: cloudflare
 
-dns_management_method: "cloudflare"
-
-#dns_zones: [ localdomain ]
-#dns_host_name_short: localhost
+# dns_zones: [ localdomain ]
+# dns_host_name_short: localhost
 
 # Additional hostnames to set which point to hostname.zone -> host_ipv4/6
 dns_host_names: []
-#dns_host_names:
-#  - name: mail
-#    target:
-#      ipv4: ipv4_mail
-#      ipv6: ipv6_mail
+# dns_host_names:
+#   - name: mail
+#     target:
+#       ipv4: ipv4_mail
+#       ipv6: ipv6_mail
 
-#dns_host_ipv4: ~
-#dns_host_ipv6: ~
+# dns_host_ipv4: ~
+# dns_host_ipv6: ~
 
 dns_host_sshfp: []
-#dns_host_sshfp:
-#  - algorithm: ECDSA
-#    hash_type: SHA-256
-#    fingerprint: ~
+# dns_host_sshfp:
+#   - algorithm: ECDSA
+#     hash_type: SHA-256
+#     fingerprint: ~
 
 dns_cnames: []
 dns_services: []
 dns_text_records: []
 ## Allow some-server.example-org to send mail from
 ## all servers listed in MX some-server.example.org
-#dns_text_records:
-#  - zone: example.org
-#    records:
-#      - name: "some-server"
-#        content: "v=spf1 mx -all"
+# dns_text_records:
+#   - zone: example.org
+#     records:
+#       - name: "some-server"
+#         content: "v=spf1 mx -all"
