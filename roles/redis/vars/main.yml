@@ -1,11 +1,9 @@
 ---
-
 redis_docker_volumes_base:
   - "{{ redis_data_dir }}:/data"
   - "{{ redis_config_file }}:{{ redis_docker_configpath }}"
-redis_docker_volumes: "{{ redis_docker_volumes_base + redis_docker_extra_volumes|default([]) }}"
+redis_docker_volumes: "{{ redis_docker_volumes_base + redis_docker_extra_volumes | default([]) }}"
 
 redis_docker_labels_base:
   version: "{{ redis_version }}"
 redis_docker_labels_complete: "{{ redis_docker_labels_base | combine(redis_docker_labels) }}"
-

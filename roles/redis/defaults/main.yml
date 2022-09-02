@@ -1,30 +1,27 @@
 ---
-
-redis_version: "6.2.6"
+redis_version: 6.2.6
 redis_user: "{{ redis_prefix }}redis"
-redis_basepath: "/opt/redis"
+redis_basepath: /opt/redis
 redis_data_dir: "{{ redis_basepath }}/{{ redis_prefix }}data"
-redis_config_dir: "{{ redis_basepath }}/{{redis_prefix }}config"
+redis_config_dir: "{{ redis_basepath }}/{{ redis_prefix }}config"
 redis_config_file: "{{ redis_config_dir }}/redis.conf"
-redis_secret: ~
-
-redis_config_bind_ip: "0.0.0.0"
-redis_config_unix_socket_path: ~
+redis_secret:
+redis_config_bind_ip: 0.0.0.0
+redis_config_unix_socket_path:
 redis_config_unix_socket_perm: 775
-redis_config_max_memory_mb: ~
-redis_config_max_memory_policy: ~ # allkeys-lru
+redis_config_max_memory_mb:
+redis_config_max_memory_policy: # allkeys-lru
 
 # Overwrite per-instance to be able to run many instances on the same host
 # prefix should be sth like 'matrix_', modifies mapped directories, container name and uer
 redis_prefix: ""
 
 redis_docker_labels: {}
-redis_docker_configpath: "/usr/local/etc/redis/redis.conf"
-redis_docker_image: "docker.io/library/redis:{{ redis_docker_tag }}"
+redis_docker_configpath: /usr/local/etc/redis/redis.conf
+redis_docker_image: docker.io/library/redis:{{ redis_docker_tag }}
 redis_docker_tag: "{{ redis_version }}-alpine"
 redis_docker_container_name: "{{ redis_prefix }}redis"
-redis_docker_ports: [ "6379:6379" ]
-redis_docker_networks: ~
+redis_docker_ports: [6379:6379]
+redis_docker_networks:
 redis_docker_purge_networks: false
 redis_docker_volumes:
-

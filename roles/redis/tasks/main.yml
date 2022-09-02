@@ -1,57 +1,53 @@
 ---
-
 - name: Create redis user
-  user:
+  ansible.builtin.user:
     name: "{{ redis_user }}"
-    create_home: no
+    create_home: false
     state: present
   register: redis_user_res
-  tags: ['prepare', 'prepare-redis',
-         'deploy', 'deploy-redis']
-
+  tags: [prepare, prepare-redis, deploy, deploy-redis]
 - name: Create redis directory
-  file:
+  ansible.builtin.file:
     path: "{{ redis_basepath }}"
     state: directory
     owner: "{{ redis_user }}"
     group: "{{ redis_user }}"
-  tags: ['prepare', 'prepare-redis']
-
+    mode: "0700"
+  tags: [prepare, prepare-redis]
 - name: Create redis directory for data persistance
-  file:
+  ansible.builtin.file:
     path: "{{ redis_data_dir }}"
     state: directory
     owner: "{{ redis_user }}"
     group: "{{ redis_user }}"
-  tags: ['prepare', 'prepare-redis']
-
+    mode: "0700"
+  tags: [prepare, prepare-redis]
 - name: Create redis config directory
-  file:
+  ansible.builtin.file:
     path: "{{ redis_config_dir }}"
     state: directory
     owner: "{{ redis_user }}"
     group: "{{ redis_user }}"
-  tags: ['prepare', 'prepare-redis']
-
+    mode: "0700"
+  tags: [prepare, prepare-redis]
 - name: Template redis config file
-  template:
+  ansible.builtin.template:
     src: redis.conf.j2
     dest: "{{ redis_config_file }}"
     owner: "{{ redis_user }}"
     group: "{{ redis_user }}"
+    mode: "0700"
   notify: restart-redis
-  tags: ['deploy', 'deploy-redis']
-
+  tags: [deploy, deploy-redis]
 - name: Ensure redis container image is present
-  docker_image:
+  community.docker.docker_image:
     name: "{{ redis_docker_image }}"
-    force_source: "{{ redis_docker_image_force_pull|default(False) }}"
+    force_source: "{{ redis_docker_image_force_pull | default(False) }}"
     source: pull
     state: present
-  tags: ['prepare', 'prepare-redis']
-
+  tags: [prepare, prepare-redis]
 - name: Setup redis docker container
-  docker_container:
+  community.docker.docker_container:
     image: "{{ redis_docker_image }}"
     name: "{{ redis_docker_container_name }}"
     restart_policy: unless-stopped
@@ -61,12 +57,11 @@
     labels: "{{ redis_docker_labels_complete }}"
     networks: "{{ redis_docker_networks | default(omit, True) }}"
     purge_networks: "{{ redis_docker_purge_networks }}"
-    entrypoint: "redis-server"
-    command: [ "{{ redis_docker_configpath }}" ]
+    entrypoint: redis-server
+    command: ["{{ redis_docker_configpath }}"]
     healthcheck:
       test: >-
         redis-cli -a {{ redis_secret }} PING || exit 1
-  tags: ['deploy', 'deploy-redis']
-
+  tags: [deploy, deploy-redis]
 - name: Ensure redis is restarted if config changed
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
