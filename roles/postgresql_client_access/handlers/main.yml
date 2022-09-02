@@ -1,5 +1,4 @@
 ---
-
 - name: Restart PostgreSQL docker container
   community.docker.docker_container:
     name: postgresql
