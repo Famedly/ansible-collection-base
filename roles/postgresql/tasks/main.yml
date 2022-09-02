@@ -1,36 +1,30 @@
 ---
-
 - name: Create system user to run postgresql as
-  user:
+  ansible.builtin.user:
     name: "{{ postgresql_user }}"
     state: present
-    system: yes
+    system: true
   register: postgresql_user_res
-  tags: ['prepare', 'prepare-postgresql',
-         'deploy', 'deploy-postgresql']
-
+  tags: [prepare, prepare-postgresql, deploy, deploy-postgresql]
 - name: Ensure PostgreSQL container image is pulled
   community.docker.docker_image:
     name: "{{ postgresql_container_image }}"
     force_source: "{{ postgresql_container_pull }}"
     source: pull
     state: present
-  tags: [ 'prepare', 'prepare-postgresql' ]
-
+  tags: [prepare, prepare-postgresql]
 - name: Check if postgresql_data_path exists
-  stat:
+  ansible.builtin.stat:
     path: "{{ postgresql_data_path }}"
   register: stat_postgresql_data_path
-  tags: [ 'prepare', 'prepare-postgresql' ]
-
+  tags: [prepare, prepare-postgresql]
 - name: Check if postgresql_data_path is empty
-  find:
+  ansible.builtin.find:
     paths: "{{ postgresql_data_path }}"
     file_type: any
   when: stat_postgresql_data_path.stat.exists
   register: find_postgresql_data_path
-  tags: [ 'prepare', 'prepare-postgresql' ]
-
+  tags: [prepare, prepare-postgresql]
 - name: Initialize
   include_tasks: initialize.yml
   when: (not stat_postgresql_data_path.stat.exists) or (find_postgresql_data_path is defined and find_postgresql_data_path.examined == 0)
@@ -42,8 +36,7 @@
     owner: "{{ postgresql_user_res.uid }}"
     group: "{{ postgresql_user_res.group }}"
     mode: 0640
-  tags: [ 'prepare', 'prepare-postgresql' ]
-
+  tags: [prepare, prepare-postgresql]
 - name: Insert pg_hba.conf header
   ansible.builtin.lineinfile:
     path: "{{ postgresql_config_path }}/pg_hba.conf"
@@ -53,8 +46,7 @@
     mode: 0640
     owner: "{{ postgresql_user_res.uid }}"
     group: "{{ postgresql_user_res.group }}"
-  tags: [ 'prepare', 'prepare-postgresql' ]
-
+  tags: [prepare, prepare-postgresql]
 - name: Allow peer login for postgres user on socket
   community.postgresql.postgresql_pg_hba:
     dest: "{{ postgresql_config_path }}/pg_hba.conf"
@@ -62,8 +54,7 @@
     users: postgres
     method: peer
     options: map=root_postgres
-  tags: [ 'prepare', 'prepare-postgresql' ]
-
+  tags: [prepare, prepare-postgresql]
 - name: Insert pg_ident.conf header
   ansible.builtin.lineinfile:
     path: "{{ postgresql_config_path }}/pg_ident.conf"
@@ -73,15 +64,13 @@
     mode: 0640
     owner: "{{ postgresql_user_res.uid }}"
     group: "{{ postgresql_user_res.group }}"
-  tags: [ 'prepare', 'prepare-postgresql' ]
-
+  tags: [prepare, prepare-postgresql]
 - name: Insert pg_ident.conf root_postgres user map
   ansible.builtin.lineinfile:
     path: "{{ postgresql_config_path }}/pg_ident.conf"
     insertafter: "# Ansible managed"
-    line: "root_postgres\troot\tpostgres"  # noqa no-tabs
-  tags: [ 'prepare', 'prepare-postgresql' ]
-
+    line: "root_postgres\troot\tpostgres" # noqa no-tabs
+  tags: [prepare, prepare-postgresql]
 - name: Ensure PostgreSQL container is started
   community.docker.docker_container:
     name: "{{ postgresql_container_name }}"
@@ -100,26 +89,23 @@
     restart_policy: unless-stopped
     state: started
   register: postgresql_container
-  tags: [ 'deploy', 'deploy-postgresql' ]
-
+  tags: [deploy, deploy-postgresql]
 - name: Wait for container startup
-  wait_for:
+  ansible.builtin.wait_for:
     path: "{{ postgresql_socket_path }}/.s.PGSQL.5432"
   when: postgresql_connect_socket
-  tags: [ 'deploy', 'deploy-postgresql' ]
-
+  tags: [deploy, deploy-postgresql]
 - name: Wait for container startup
-  wait_for:
+  ansible.builtin.wait_for:
     port: "{{ postgresql_host_port }}"
   when: not postgresql_connect_socket
-  tags: [ 'deploy', 'deploy-postgresql' ]
-
+  tags: [deploy, deploy-postgresql]
 - name: Set superuser password
   community.postgresql.postgresql_user:
     name: postgres
     password: "{{ postgresql_superuser_password }}"
     login_host: "{{ postgresql_connection.login_host }}"
-  tags: [ 'deploy', 'deploy-postgresql' ]
+  tags: [deploy, deploy-postgresql]
   register: postgresql_superuser_password_result
   until: postgresql_superuser_password_result is succeeded
   retries: 5
@@ -134,17 +120,16 @@
     login_password: "{{ postgresql_connection.login_password }}"
   register: postgresql_set_result
   loop: "{{ postgresql_global_config_options }}"
-  tags: [ 'deploy', 'deploy-postgresql' ]
-
+  tags: [deploy, deploy-postgresql]
 # The above task sets global options, but only some of them require a restart
 # The below task notifies the restart handler only in these cases, preventing unnecessary downtime
 - name: Check and notify handler if restart is required
-  debug:
+  ansible.builtin.debug:
     msg: "{{ item.item.option }} changed. Restart required: {{ item.restart_required }}"
-  when: item.changed  # noqa no-handler
+  when: item.changed # noqa no-handler
   changed_when: item.restart_required
   notify: postgresql_container_restart
   loop: "{{ postgresql_set_result.results }}"
   loop_control:
     label: "{{ item.item.option }}"
-  tags: [ 'deploy', 'deploy-postgresql' ]
+  tags: [deploy, deploy-postgresql]
