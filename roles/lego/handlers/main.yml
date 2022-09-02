@@ -1,10 +1,10 @@
 ---
 - name: Run lego
-  become: yes
+  become: true
   become_user: "{{ lego_user_res.name }}"
   environment: "{{ lego_configuration_merged.environment }}"
-  command: "{{ lego_command_playbook }}"
+  ansible.builtin.command: "{{ lego_command_playbook }}"
 
 - name: Reload systemd
-  systemd:
-    daemon_reload: yes
+  ansible.builtin.systemd:
+    daemon_reload: true

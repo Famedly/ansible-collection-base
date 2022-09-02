@@ -1,14 +1,13 @@
 ---
-
 - name: Ensure lego user is created
-  user:
+  ansible.builtin.user:
     name: "{{ lego_user }}"
     state: present
-    system: yes
+    system: true
   register: lego_user_res
 
 - name: Ensure base directory for lego is created
-  file:
+  ansible.builtin.file:
     path: "{{ lego_base_path }}"
     state: directory
     owner: "{{ lego_certificate_store_user }}"
@@ -16,7 +15,7 @@
     mode: "0755"
 
 - name: Ensure certificate directory exists and has the configured permissions
-  file:
+  ansible.builtin.file:
     path: "{{ lego_certificate_store }}"
     state: directory
     owner: "{{ lego_certificate_store_user }}"
@@ -24,27 +23,27 @@
     mode: "{{ lego_certificate_store_mode }}"
 
 - name: Ensure lego binary exists and has the correct version
-  shell: "{{ lego_check_version_cmd }}"
+  ansible.builtin.shell: "{{ lego_check_version_cmd }}" # noqa command-instead-of-shell
   check_mode: false
   changed_when: false
-  ignore_errors: yes
+  ignore_errors: true
   register: lego_version_res
 
 - name: Install lego from github releases
   block:
     - name: Download source file
-      get_url:
+      ansible.builtin.get_url: # noqa risky-file-permissions
         url: "{{ lego_source_url }}"
         dest: "{{ lego_base_path }}/source.tar"
         checksum: "{{ lego_source_checksum_url }}"
 
     - name: Unpack source files
-      unarchive:
+      unarchiveansible.builtin.:
         src: "{{ lego_base_path }}/source.tar"
         dest: "{{ lego_base_path }}"
         owner: "{{ lego_user_res.uid }}"
         group: "{{ lego_user_res.group }}"
-        remote_src: True
+        remote_src: true
 
     - name: Allow lego to bind to ports below 1024
       capabilities:
@@ -54,15 +53,15 @@
       when: lego_cap_net_bind_service
 
     - name: Delete source files
-      file:
+      ansible.builtin.file: # noqa risky-file-permissions
         path: "{{ lego_base_path }}/source.tar"
         state: absent
-  when: 'lego_version_res.failed or not lego_version in lego_version_res.stdout'
+  when: lego_version_res.failed or not lego_version in lego_version_res.stdout
 
 - name: Create acme account
   block:
     - name: Create account directory
-      file:
+      ansible.builtin.file:
         path: "{{ lego_acme_account_base_path }}"
         state: directory
         mode: "0700"
@@ -70,7 +69,7 @@
         group: "{{ lego_user_res.group }}"
 
     - name: Create key directory
-      file:
+      ansible.builtin.file:
         path: "{{ lego_acme_key_base_path }}"
         state: directory
         mode: "0700"
@@ -78,16 +77,22 @@
         group: "{{ lego_user_res.group }}"
 
     - name: Save acme account
-      copy:
+      ansible.builtin.copy:
         dest: "{{ lego_acme_account_path }}"
         content: "{{ lego_acme_account_merged | to_json }}"
+        mode: "0700"
+        owner: "{{ lego_user_res.uid }}"
+        group: "{{ lego_user_res.group }}"
       notify:
         - Run lego
 
     - name: Save acme private key
-      copy:
+      ansible.builtin.copy:
         dest: "{{ lego_acme_key_path }}"
         content: "{{ lego_acme_privkey }}"
+        mode: "0700"
+        owner: "{{ lego_user_res.uid }}"
+        group: "{{ lego_user_res.group }}"
       notify:
         - Run lego
 
@@ -110,15 +115,15 @@
       register: lego_certificate_info
 
     # you have to seperatly loop because map with regex_replace does not like getting AnsibleUnsafeText objects
-    - name: remove DNS at the start of the SAN
+    - name: Remove DNS at the start of the SAN
       ansible.builtin.set_fact:
-        lego_certificate_sans: "{{ lego_certificate_sans | default([]) + [ item | regex_replace('^DNS:', '') ] }}"
+        lego_certificate_sans: "{{ lego_certificate_sans | default([]) + [item | regex_replace('^DNS:', '')] }}"
       loop: "{{ lego_certificate_info.subject_alt_name }}"
       when: lego_certificate_stat.stat.exists
 
     - name: Compare SANs, notify handler if they differ
       ansible.builtin.set_fact:
-        lego_certificate_sans_equal: >-2
+        lego_certificate_sans_equal: >-
           {{
             lego_certificate.domains is superset(lego_certificate_sans)
             and lego_certificate.domains is subset(lego_certificate_sans)
@@ -132,7 +137,7 @@
       ansible.builtin.set_fact:
         lego_certificate_pubkey_type_differs: "{{ lego_certificate_info.public_key_type != lego_certificate_wanted_keytype }}"
       vars:
-        lego_certificate_wanted_keytype: >-2
+        lego_certificate_wanted_keytype: >-
           {{
             "ECC" if "ec" in lego_configuration.command_parameters.global["key-type"]
             else "RSA" if "rsa" in lego_configuration.command_parameters.global["key-type"]
@@ -143,41 +148,36 @@
         - Run lego
 
 - name: Ensure systemd unit file for lego is templated
-  template:
+  ansible.builtin.template:
     src: lego.service.j2
     dest: "{{ lego_systemd_path }}/lego.service"
-    owner: "root"
-    group: "root"
-    mode: '0755'
+    owner: root
+    group: root
+    mode: "0755"
   notify:
     - Reload systemd
 
 - name: Ensure systemd timer for lego is templated
-  template:
+  ansible.builtin.template:
     src: lego.timer.j2
     dest: "{{ lego_systemd_path }}/lego.timer"
-    owner: "root"
-    group: "root"
-    mode: '0755'
+    owner: root
+    group: root
+    mode: "0755"
   notify:
     - Reload systemd
 
 - name: Flush handlers to ensure systemd has loaded the unit files
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: Enable lego.service
-  systemd:
-    name: "lego.service"
-    enabled: yes
+  ansible.builtin.systemd:
+    name: lego.service
+    enabled: true
 
 - name: Enable lego.timer
-  systemd:
-    name: "lego.timer"
-    enabled: yes
-  register: res_lego_timer
-
-- name: Start lego.timer
-  systemd:
-    name: "lego.timer"
+  ansible.builtin.systemd:
+    name: lego.timer
+    enabled: true
     state: started
-  when: res_lego_timer.changed
+  register: res_lego_timer

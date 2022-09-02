@@ -6,42 +6,44 @@ lego_certificate_store_group: "{{ lego_user_res.group | default(lego_user) }}"
 lego_certificate_store_mode: "0750"
 lego_systemd_path: /etc/systemd/system
 lego_version: 4.5.2
-lego_system_type: "linux"
-lego_system_arch: "amd64"
+lego_system_type: linux
+lego_system_arch: amd64
 lego_executable: "{{ lego_base_path }}/lego"
 lego_account_base_path: "{{ lego_base_path }}/accounts"
-lego_cap_net_bind_service: yes
+lego_cap_net_bind_service: true
 
-lego_source_url: "https://github.com/go-acme/lego/releases/download/v{{ lego_version }}/lego_v{{ lego_version }}_{{ lego_system_type }}_{{ lego_system_arch }}.tar.gz"
-lego_source_checksum_url: "sha256:https://github.com/go-acme/lego/releases/download/v{{ lego_version }}/lego_{{ lego_version }}_checksums.txt"
+lego_repository: https://github.com/go-acme/lego
+lego_release_path: "{{ lego_repository }}/releases/download/v{{ lego_version }}"
+lego_source_url: "{{ lego_release_path }}/lego_v{{ lego_version }}_{{ lego_system_type }}_{{ lego_system_arch }}.tar.gz"
+lego_source_checksum_url: sha256:{{ lego_release_path }}/lego_{{ lego_version }}_checksums.txt
 
-lego_check_version_cmd: "test -e {{ lego_executable }} && {{ lego_executable }} --version"
+lego_check_version_cmd: test -e {{ lego_executable }} && {{ lego_executable }} --version
 
 lego_user: lego
-lego_timer_on_boot: "5min"
+lego_timer_on_boot: 5min
 lego_timer_on_calendar: "*:0/15"
 
-lego_certificate: ~
+lego_certificate:
 lego_letsencrypt_environment: staging
 
 lego_challenge:
   type: http
 
 lego_letsencrypt_servers:
-  prod: "https://acme-v02.api.letsencrypt.org/directory"
-  staging: "https://acme-staging-v02.api.letsencrypt.org/directory"
+  prod: https://acme-v02.api.letsencrypt.org/directory
+  staging: https://acme-staging-v02.api.letsencrypt.org/directory
 
 lego_tasks:
-  playbook: "run"
-  systemd: "renew"
+  playbook: run
+  systemd: renew
 
 lego_acme_account_defaults:
   email: "{{ lego_certificate.email }}"
   registration:
     body:
-      status: "valid"
+      status: valid
       contact:
-        - "mailto:{{ lego_certificate.email }}"
+        - mailto:{{ lego_certificate.email }}
 
 lego_certificate_renewal_days: 30
 
