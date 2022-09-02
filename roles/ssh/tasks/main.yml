@@ -1,142 +1,130 @@
 ---
-- meta: noop
+- name: No-op task for yaml anchors
+  ansible.builtin.meta: noop
   vars: &sshd_config_args
     path: "{{ ssh_config_file }}"
     state: present
-    validate: "sshd -Tf %s"
-  tags: ['prepare', 'prepare-sshd']
-
+    validate: sshd -Tf %s
+    owner: root
+    group: root
+    mode: 0644
+  tags: [prepare, prepare-sshd]
 - name: Disallow password authentication
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: "^#?PasswordAuthentication"
-    line: "PasswordAuthentication {{ sshd_config_password_authentication | ternary('yes', 'no') }}"
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+    regexp: ^#?PasswordAuthentication
+    line: PasswordAuthentication {{ sshd_config_password_authentication | ternary('yes', 'no') }}
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Disallow challenge-response authentication
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: "^#?ChallengeResponseAuthentication"
-    line: "ChallengeResponseAuthentication {{ sshd_config_challenge_response_authentication | ternary('yes', 'no') }}"
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+    regexp: ^#?ChallengeResponseAuthentication
+    line: ChallengeResponseAuthentication {{ sshd_config_challenge_response_authentication | ternary('yes', 'no') }}
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Allow pubkey authentication
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: "^#?PubkeyAuthentication"
-    line: "PubkeyAuthentication {{ sshd_config_pubkey_authentication | ternary('yes', 'no') }}"
-    firstmatch: yes
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+    regexp: ^#?PubkeyAuthentication
+    line: PubkeyAuthentication {{ sshd_config_pubkey_authentication | ternary('yes', 'no') }}
+    firstmatch: true
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Disallow root login
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: "^#?PermitRootLogin"
-    line: "PermitRootLogin {{ sshd_config_root_login | ternary('yes', 'no') }}"
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+    regexp: ^#?PermitRootLogin
+    line: PermitRootLogin {{ sshd_config_root_login | ternary('yes', 'no') }}
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Do not allow sessions to idle longer than 5 minutes
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: "^#?ClientAliveInterval"
-    line: "ClientAliveInterval {{ sshd_config_client_alive_interval }}"
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+    regexp: ^#?ClientAliveInterval
+    line: ClientAliveInterval {{ sshd_config_client_alive_interval }}
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Only allow SSHv2
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: "^#?Protocol"
-    line: "Protocol {{ sshd_config_protocol }}"
-    insertafter: &cipher_after "^# Ciphers and keying"
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+    regexp: ^#?Protocol
+    line: Protocol {{ sshd_config_protocol }}
+    insertafter: &cipher_after ^# Ciphers and keying
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Disallow X11-Forwarding
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: "^#?X11Forwarding"
-    line: "X11Forwarding {{ sshd_config_x11_forwarding | ternary('yes', 'no') }}"
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+    regexp: ^#?X11Forwarding
+    line: X11Forwarding {{ sshd_config_x11_forwarding | ternary('yes', 'no') }}
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Disallow Agent Forwarding
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: "^#?AllowAgentForwarding"
-    line: "AllowAgentForwarding {{ sshd_config_allow_agent_forwarding | ternary('yes', 'no') }}"
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+    regexp: ^#?AllowAgentForwarding
+    line: AllowAgentForwarding {{ sshd_config_allow_agent_forwarding | ternary('yes', 'no') }}
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Disallow TCP Forwarding
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: "^#?AllowTcpForwarding"
-    line: "AllowTcpForwarding {{ sshd_config_allow_tcp_forwarding | ternary('yes', 'no') }}"
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+    regexp: ^#?AllowTcpForwarding
+    line: AllowTcpForwarding {{ sshd_config_allow_tcp_forwarding | ternary('yes', 'no') }}
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Only allow reasonably secure KeyExAlgorithms
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: '^#?KexAlgorithms'
-    line: "KexAlgorithms {{ ssh_preset.allowed_kexalgos|join(',') }}"
+    regexp: ^#?KexAlgorithms
+    line: KexAlgorithms {{ ssh_preset.allowed_kexalgos | join(',') }}
     insertafter: *cipher_after
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Only allow reasonably secure ciphers
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: '^#?Ciphers'
-    line: "Ciphers {{ ssh_preset.allowed_ciphers|join(',') }}"
+    regexp: ^#?Ciphers
+    line: Ciphers {{ ssh_preset.allowed_ciphers | join(',') }}
     insertafter: *cipher_after
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Only allow reasonably secure MACs
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: '^#?MACs'
-    line: "MACs {{ ssh_preset.allowed_macs|join(',') }}"
+    regexp: ^#?MACs
+    line: MACs {{ ssh_preset.allowed_macs | join(',') }}
     insertafter: *cipher_after
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Only allow reasonably secure hostkey algorithms
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: '^#?HostKeyAlgorithms'
-    line: "HostKeyAlgorithms {{ ssh_preset.allowed_hostkey_algos|join(',') }}"
+    regexp: ^#?HostKeyAlgorithms
+    line: HostKeyAlgorithms {{ ssh_preset.allowed_hostkey_algos | join(',') }}
     insertafter: *cipher_after
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Only allow reasonably secure publickey algorithms
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: '^#?PubkeyAcceptedKeyTypes'
-    line: "PubkeyAcceptedKeyTypes {{ ssh_preset.allowed_pubkey_algos|join(',') }}"
+    regexp: ^#?PubkeyAcceptedKeyTypes
+    line: PubkeyAcceptedKeyTypes {{ ssh_preset.allowed_pubkey_algos | join(',') }}
     insertafter: *cipher_after
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Set LogLevel to {{ ssh_loglevel }}
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: '^#?LogLevel'
-    line: "LogLevel {{ ssh_loglevel }}"
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
-
+    regexp: ^#?LogLevel
+    line: LogLevel {{ ssh_loglevel }}
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]
 - name: Listen on address family {{ ssh_address_family }}
-  lineinfile:
+  ansible.builtin.file:
     <<: *sshd_config_args
-    regexp: '^#?AddressFamily'
-    line: "AddressFamily {{ ssh_address_family }}"
-  notify: reload sshd
-  tags: ['prepare', 'prepare-sshd']
+    regexp: ^#?AddressFamily
+    line: AddressFamily {{ ssh_address_family }}
+  notify: reload-sshd
+  tags: [prepare, prepare-sshd]

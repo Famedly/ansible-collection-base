@@ -1,12 +1,11 @@
 ---
-
 ssh_secure_presets:
   allowed_kexalgos:
     - curve25519-sha256@libssh.org
     - diffie-hellman-group18-sha512
     - diffie-hellman-group16-sha512
     - diffie-hellman-group14-sha256
-  allowed_ciphers: "{{ [ 'chacha20-poly1305@openssh.com' ] + ssh_bsi_recommended_presets.allowed_ciphers }}"
+  allowed_ciphers: "{{ ['chacha20-poly1305@openssh.com'] + ssh_bsi_recommended_presets.allowed_ciphers }}"
   allowed_macs:
     - hmac-sha2-512-etm@openssh.com
     - hmac-sha2-256-etm@openssh.com
@@ -16,30 +15,29 @@ ssh_secure_presets:
     - ecdsa-sha2-nistp384
     - ssh-rsa
   allowed_pubkey_algos:
-    - "-ssh-dss"
+    - -ssh-dss
 
 ssh_bsi_recommended_presets:
   allowed_kexalgos:
-  - ecdh-sha2-nistp521
-  - ecdh-sha2-nistp384
-  - ecdh-sha2-nistp256
-  - diffie-hellman-group-exchange-sha256
-  - diffie-hellman-group16-sha512
+    - ecdh-sha2-nistp521
+    - ecdh-sha2-nistp384
+    - ecdh-sha2-nistp256
+    - diffie-hellman-group-exchange-sha256
+    - diffie-hellman-group16-sha512
   # Prefer the "encrypt-then-MAC" (etm) ciphers
   allowed_ciphers:
-  - aes256-gcm@openssh.com
-  - aes128-gcm@openssh.com
-  - aes256-ctr
-  - aes192-ctr
-  - aes128-ctr
+    - aes256-gcm@openssh.com
+    - aes128-gcm@openssh.com
+    - aes256-ctr
+    - aes192-ctr
+    - aes128-ctr
   allowed_macs:
-  - hmac-sha2-512-etm@openssh.com
-  - hmac-sha2-256-etm@openssh.com
-  - hmac-sha2-512
-  - hmac-sha2-256
+    - hmac-sha2-512-etm@openssh.com
+    - hmac-sha2-256-etm@openssh.com
+    - hmac-sha2-512
+    - hmac-sha2-256
   allowed_hostkey_algos:
-  - ecdsa-sha2-*
-  - ssh-rsa
+    - ecdsa-sha2-*
+    - ssh-rsa
   allowed_pubkey_algos:
-    - "-ssh-dss"
-
+    - -ssh-dss
