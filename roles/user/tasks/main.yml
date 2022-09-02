@@ -1,6 +1,6 @@
 ---
 - name: Ensure sudo is installed
-  package:
+  ansible.builtin.package:
     name: sudo
     state: present
   register: task_result
@@ -15,10 +15,10 @@
     loop_var: user
 
 - name: Template sudoers.d managed file
-  template:
-    src: "sudoers.j2"
-    dest: "/etc/sudoers.d/{{ users_sudo_namespace }}"
+  ansible.builtin.template:
+    src: sudoers.j2
+    dest: /etc/sudoers.d/{{ users_sudo_namespace }}
     owner: root
     mode: 0440
-    validate: "/usr/sbin/visudo -cf %s"
+    validate: /usr/sbin/visudo -cf %s
   become: true

@@ -1,6 +1,6 @@
 ---
-- name: "Ensure user {{ user.name }} is {{ user.attrs.active | default(false) | ternary('present', 'absent') }}"
-  user:
+- name: Ensure user {{ user.name }} is {{ user.attrs.active | default(false) | ternary('present', 'absent') }}
+  ansible.builtin.user:
     name: "{{ user.name }}"
     shell: "{{ user.attrs.shell | default(omit) }}"
     groups: "{{ user.attrs.groups | default(omit) }}"
@@ -10,8 +10,8 @@
     state: "{{ user.attrs.active | default(false) | ternary('present', 'absent') }}"
   become: true
 
-- name: "Ensure ssh keys for {{ user.name }} are up to date"
-  authorized_key:
+- name: Ensure ssh keys for {{ user.name }} are up to date
+  ansible.posix.authorized_key:
     user: "{{ user.name }}"
     key: "{{ user.attrs.ssh | join('\n') }}"
     exclusive: true
