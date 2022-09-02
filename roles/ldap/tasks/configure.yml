@@ -1,5 +1,4 @@
 ---
-
 # Configures the ACL via root on LDAP-IPC-Socket
 - name: Configure ACL
   become: true
@@ -8,20 +7,19 @@
     attributes:
       olcAccess: "{{ ldap_acls }}"
     state: exact
-    server_uri: "ldapi://{{ (ldap_sock_path + '/slapd.sock') | urlencode | replace('/', '%2F') }}"
+    server_uri: ldapi://{{ (ldap_sock_path + '/slapd.sock') | urlencode | replace('/', '%2F') }}
   retries: 3
   delay: 3
   register: acl_res
   until: acl_res is succeeded
-  tags: [ 'deploy', 'deploy-ldap', 'ldap-sync', 'ldap-sync-acl' ]
-
+  tags: [deploy, deploy-ldap, ldap-sync, ldap-sync-acl]
 - name: Ensure rootDN credentials up-to-date
   become: true
   ldap_attrs:
     dn: "{{ ldap_config_db }}"
-    attributes: "{{ { item.key: item.value  } }}"
+    attributes: "{{ {item.key: item.value} }}"
     state: exact
-    server_uri: "ldapi://{{ (ldap_sock_path + '/slapd.sock') | urlencode | replace('/', '%2F') }}"
+    server_uri: ldapi://{{ (ldap_sock_path + '/slapd.sock') | urlencode | replace('/', '%2F') }}
   no_log: "{{ item.log is defined and item.log == false }}"
   loop:
     - key: olcRootDN
@@ -29,8 +27,7 @@
     - key: olcRootPW
       value: "{{ ldap_root_pass }}"
       log: false
-  tags: [ 'deploy', 'deploy-ldap', 'ldap-sync' ]
-
+  tags: [deploy, deploy-ldap, ldap-sync]
 # Root node can be created with normal bind via LDAP
 - name: Create root node
   become: true
@@ -41,29 +38,27 @@
       - dcObject
       - organization
     attributes:
-      dc: "{{ ldap_domain|regex_replace('\\..+', '') }}"
+      dc: "{{ ldap_domain | regex_replace('\\..+', '') }}"
       o: "{{ ldap_org }}"
     bind_dn: "{{ ldap_rootdn }}"
     bind_pw: "{{ ldap_root_pass }}"
     server_uri: "{{ ldap_server_uri }}"
-  tags: [ 'deploy', 'deploy-ldap', 'ldap-sync' ]
-
+  tags: [deploy, deploy-ldap, ldap-sync]
 - name: Ensure root node is correctly configured
   become: true
   ldap_attrs:
     dn: "{{ ldap_dn }}"
     attributes:
       o: "{{ ldap_org }}"
-      dc: "{{ ldap_domain|regex_replace('\\..+', '') }}"
+      dc: "{{ ldap_domain | regex_replace('\\..+', '') }}"
     state: exact
     bind_dn: "{{ ldap_rootdn }}"
     bind_pw: "{{ ldap_root_pass }}"
     server_uri: "{{ ldap_server_uri }}"
-  tags: [ 'deploy', 'deploy-ldap', 'ldap-sync' ]
-
+  tags: [deploy, deploy-ldap, ldap-sync]
 - name: Create organizational units
   ldap_entry:
-    dn: "ou={{ ou_name }},{{ ldap_dn }}"
+    dn: ou={{ ou_name }},{{ ldap_dn }}
     objectClass: organizationalUnit
     state: present
     bind_dn: "{{ ldap_rootdn }}"
@@ -72,4 +67,4 @@
   loop: "{{ ldap_org_units }}"
   loop_control:
     loop_var: ou_name
-  tags: [ 'deploy', 'deploy-ldap', 'ldap-sync' ]
+  tags: [deploy, deploy-ldap, ldap-sync]

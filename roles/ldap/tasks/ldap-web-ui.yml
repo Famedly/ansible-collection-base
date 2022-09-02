@@ -5,9 +5,8 @@
     force_source: "{{ ldap_management_container_pull }}"
     source: pull
     state: present
-  when: ldap_management_container_enabled|bool
-  tags: ['prepare', 'prepare-ldap']
-
+  when: ldap_management_container_enabled | bool
+  tags: [prepare, prepare-ldap]
 - name: Ensure LDAP management container is started
   docker_container:
     name: "{{ ldap_management_container_name }}"
@@ -22,13 +21,11 @@
       test: >-
         [ $(pgrep -u www-data -c -f /usr/sbin/apache2) -gt 0 ]
         || exit 1
-
-  when: ldap_management_container_enabled|bool
-  tags: ['deploy', 'deploy-ldap']
-
+  when: ldap_management_container_enabled | bool
+  tags: [deploy, deploy-ldap]
 - name: Ensure LDAP management container is absent
   docker_container:
     name: "{{ ldap_management_container_name }}"
     state: absent
-  when: not ldap_management_container_enabled|bool
-  tags: ['deploy', 'deploy-ldap']
+  when: not ldap_management_container_enabled | bool
+  tags: [deploy, deploy-ldap]
