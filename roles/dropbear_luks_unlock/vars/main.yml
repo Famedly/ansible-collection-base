@@ -1,0 +1,2 @@
+---
+dropbear_options: "{{ dropbear_default_options + dropbear_extra_options | default([]) }}"

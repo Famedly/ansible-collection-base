@@ -1,4 +1,4 @@
-# `famedly.base.dropbear-luks-unlock` ansible role
+# `famedly.base.dropbear_luks_unlock` ansible role
 
 ## Usage
 

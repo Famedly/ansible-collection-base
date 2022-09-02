@@ -1,55 +1,65 @@
 ---
-
 - name: Install required packages
-  apt:
+  ansible.builtin.apt:
     state: present
     pkg: "{{ dropbear_luks_required_packages }}"
 
 - name: Configure `/etc/crypttab`
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ dropbear_initramfs_config_path }}"
-    regex: "^(.*) (luks,discard)$"
-    line: '\1 luks,initramfs'
+    regex: ^(.*) (luks,discard)$
+    line: \1 luks,initramfs
     state: present
-    backrefs: yes
+    backrefs: true
 
 - name: Configure SSH options for dropbear
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ dropbear_initramfs_config_path }}"
-    line: "DROPBEAR_OPTIONS=\"{{ dropbear_options | join(' ') }}\""
-    regex: "^#?DROPBEAR_OPTIONS="
+    line: DROPBEAR_OPTIONS="{{ dropbear_options | join(' ') }}"
+    regex: ^#?DROPBEAR_OPTIONS=
   notify: rebuild-initramfs
 
 - name: Configure initramfs-tools to use busybox
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ initramfs_tools_config_path }}"
-    line: "BUSYBOX=y"
-    regex: "^#?BUSYBOX="
+    line: BUSYBOX=y
+    regex: ^#?BUSYBOX=
   notify: rebuild-initramfs
 
 - name: Set interface where dropbear is supposed to listen
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ initramfs_tools_config_path }}"
-    line: "DEVICE={{ dropbear_ip_config.interface }}"
-    regex: "^#?DEVICE="
+    line: DEVICE={{ dropbear_ip_config.interface }}
+    regex: ^#?DEVICE=
   notify: rebuild-initramfs
 
 - name: Configure IP on which dropbear should listen
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ initramfs_tools_config_path }}"
-    line: "IP={{ dropbear_ip_config.ip }}::{{ dropbear_ip_config.gateway }}:{{ dropbear_ip_config.netmask }}:{{ dropbear_ip_config.hostname }}:{{ dropbear_ip_config.interface }}"
-    regex: "^#?IP="
+    line: >
+      IP={{
+        dropbear_ip_config.ip
+      }}::{{
+        dropbear_ip_config.gateway
+      }}:{{
+        dropbear_ip_config.netmask
+      }}:{{
+        dropbear_ip_config.hostname
+      }}:{{
+        dropbear_ip_config.interface
+      }}
+    regex: ^#?IP=
   notify: rebuild-initramfs
 
 - name: Instruct initramfs-tools to load the dropbear module
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ initramfs_tools_config_path }}"
-    line: "DROPBEAR=y"
-    regex: "^#?DROPBEAR="
+    line: DROPBEAR=y
+    regex: ^#?DROPBEAR=
   notify: rebuild-initramfs
 
 - name: Load additional modules
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ initramfs_tools_module_config_path }}"
     line: "{{ module }}"
     state: present
@@ -58,13 +68,16 @@
   notify: rebuild-initramfs
 
 - name: Deploy authorized SSH keys for dropbear
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ dropbear_initramfs_authorized_keys_path }}"
     line: "{{ pubkey_ssh }}"
     state: "{{ pubkey_state }}"
-    create: yes
+    owner: root
+    group: root
+    mode: "0600"
+    create: true
   vars:
-    pubkey_state: "{{ pubkey.state|default('present') if pubkey is mapping else 'present' }}"
+    pubkey_state: "{{ pubkey.state | default('present') if pubkey is mapping else 'present' }}"
     pubkey_ssh: "{{ pubkey.key if pubkey is mapping else pubkey }}"
   loop: "{{ dropbear_authorized_keys }}"
   loop_control: { loop_var: pubkey }
