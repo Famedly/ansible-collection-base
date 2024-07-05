@@ -131,6 +131,8 @@
     recreate: "{{ postgresql_container_recreate }}"
     user: "{{ postgresql_user_res.uid }}:{{ postgresql_user_res.group }}"
     restart_policy: "unless-stopped"
+    stop_signal: "{{ postgresql_container_stop_signal }}"
+    stop_timeout: "{{ postgresql_container_stop_timeout }}"
     state: "started"
   register: "postgresql_container"
   tags: ["deploy", "deploy-postgresql"]

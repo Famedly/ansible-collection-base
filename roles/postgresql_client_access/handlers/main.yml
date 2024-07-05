@@ -2,6 +2,9 @@
 - name: "Restart PostgreSQL docker container"
   community.docker.docker_container:
     name: "postgresql"
+    stop_signal: "{{ postgresql_container_stop_signal }}"
+    kill_signal: "{{ postgresql_container_kill_signal }}"
+    stop_timeout: "{{ postgresql_container_stop_timeout }}"
     state: "started"
     restart: true
   listen: "postgresql_container_restart"

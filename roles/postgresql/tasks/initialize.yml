@@ -44,6 +44,8 @@
     networks: "{{ postgresql_container_networks }}"
     etc_hosts: "{{ postgresql_container_etc_hosts }}"
     user: "{{ postgresql_user_res.uid }}:{{ postgresql_user_res.group }}"
+    stop_signal: "{{ postgresql_container_stop_signal }}"
+    stop_timeout: "{{ postgresql_container_stop_timeout }}"
     state: "started"
     env:
       POSTGRES_PASSWORD: "{{ postgresql_superuser_password }}"

@@ -58,3 +58,6 @@ postgresql_container_ulimits:
 postgresql_container_memory_reservation: "256M"
 postgresql_container_memory: "512M"
 postgresql_container_shm_size: "128M"
+
+postgresql_container_stop_signal: "SIGINT"
+postgresql_container_stop_timeout: "30"

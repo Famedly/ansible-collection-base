@@ -6,3 +6,6 @@ postgresql_connect_socket: true
 
 postgresql_container_name: "postgresql"
 postgresql_client_state: present
+
+postgresql_container_stop_signal: "SIGINT"
+postgresql_container_stop_timeout: "30"
